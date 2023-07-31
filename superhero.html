@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superhero Page</title>
+  <!-- Add your CSS styles here -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div id="video-background">
+        <video autoplay loop muted playsinline id="video">
+          <source src="video2.mp4" type="video/mp4">
+        </video>
+      </div>
+  <div class="container">
+    <h1 style="color:black;">Superhero Page</h1>
+    <div class="hero-details">
+      <img class="hero-image" id="hero-image" src="" alt="Hero Image">
+      <h2 class="hero-name" id="hero-name"></h2>
+      <p class="hero-bio" id="hero-bio"></p>
+    </div>
+    <div class="comic-section">
+      <h3>Comics</h3>
+      <ul class="comics-list" id="comics-list">
+        <!-- Comics will be dynamically filled using JavaScript -->
+      </ul>
+    </div>
+    <div class="series-section">
+      <h3>Series</h3>
+      <ul class="series-list" id="series-list">
+        <!-- Series will be dynamically filled using JavaScript -->
+      </ul>
+    </div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <script>
+    // Get the superhero ID from the query parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const heroId = urlParams.get('id');
+
+    // Call a function to fetch and display superhero details
+    fetchAndDisplayHeroDetails(heroId);
+
+    async function fetchAndDisplayHeroDetails(heroId) {
+      const publicKey = "ad7e5c7ba30d475d0b0d4d1b7d6c7e0b";
+      const privateKey = "43282d44582514679352753a3672a269a51e13ff";
+      const ts = new Date().getTime();
+      const md5hash = CryptoJS.MD5(ts + privateKey + publicKey).toString();
+
+      const url = `https://gateway.marvel.com:443/v1/public/characters/${heroId}?ts=${ts}&apikey=${publicKey}&hash=${md5hash}`;
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        const hero = data.data.results[0];
+
+        // Display superhero details on the page
+        const heroNameElement = document.getElementById("hero-name");
+        const heroImageElement = document.getElementById("hero-image");
+        const heroBioElement = document.getElementById("hero-bio");
+        const comicsListElement = document.getElementById("comics-list");
+        const seriesListElement = document.getElementById("series-list");
+
+        heroNameElement.innerText = hero.name;
+        heroImageElement.src = `${hero.thumbnail.path}.${hero.thumbnail.extension}`;
+        heroBioElement.innerText = hero.description || "No description available.";
+
+        comicsListElement.innerHTML = "";
+        hero.comics.items.forEach((comic) => {
+          const li = document.createElement("li");
+          li.innerText = comic.name;
+          comicsListElement.appendChild(li);
+        });
+
+        seriesListElement.innerHTML = "";
+        hero.series.items.forEach((series) => {
+          const li = document.createElement("li");
+          li.innerText = series.name;
+          seriesListElement.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error fetching superhero details:', error);
+      }
+    }
+  </script>
+ 
+</body>
+
+</html>
